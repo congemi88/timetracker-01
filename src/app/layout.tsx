@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import './globals.css'
+import AuthGuard from './AuthGuard'
+
 
 export default function RootLayout({
   children,
@@ -9,23 +11,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/dashboard" className="font-bold text-xl">
-              TimeTracker
-            </Link>
+        <AuthGuard>
+          <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+              <Link href="/dashboard" className="font-bold text-xl">
+                TimeTracker
+              </Link>
 
-            <div className="flex gap-4 text-sm font-medium">
-              <Link href="/dashboard">Dashboard</Link>
-              <Link href="/schedule">Schedule</Link>
-              <Link href="/entries">Add Entry</Link>
-              <Link href="/history">History</Link>
-              <Link href="/people">People</Link>
+              <div className="flex gap-4 text-sm font-medium">
+                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/schedule">Schedule</Link>
+                <Link href="/entries">Add Entry</Link>
+                <Link href="/history">History</Link>
+                <Link href="/people">People</Link>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
 
-        {children}
+          {children}
+        </AuthGuard>
       </body>
     </html>
   )

@@ -165,11 +165,11 @@ export default function DashboardPage() {
     <main className="min-h-screen p-6 max-w-6xl mx-auto">
       <div className="mb-8">
         <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-          This Week
+          Time Tracker Dashboard
         </p>
 
         <h1 className="text-4xl font-bold tracking-tight">
-          Running Totals
+          Dashboard
         </h1>
 
         <p className="text-gray-600 mt-2">
