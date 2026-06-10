@@ -177,6 +177,43 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      <div className="grid gap-5 md:grid-cols-2">
+          {summary.map((person) => (
+            <div
+              key={person.name}
+              className="bg-white border rounded-2xl shadow-sm p-6"
+            >
+              <h2 className="font-bold text-2xl mb-4">
+                {person.name}
+              </h2>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500">Hours</p>
+                  <p className="text-2xl font-bold">
+                    {person.hours.toFixed(2)}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500">Earned</p>
+                  <p className="text-2xl font-bold">
+                    ${person.pay.toFixed(2)}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500">Unpaid</p>
+                  <p className="text-2xl font-bold">
+                    ${person.unpaidPay.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        
       {message && (
         <p className="mb-6 bg-white border rounded-2xl shadow-sm p-4">
           {message}
@@ -262,43 +299,7 @@ export default function DashboardPage() {
             Add a quick entry to start tracking weekly totals.
           </p>
         </div>
-      ) : (
-        <div className="grid gap-5 md:grid-cols-2">
-          {summary.map((person) => (
-            <div
-              key={person.name}
-              className="bg-white border rounded-2xl shadow-sm p-6"
-            >
-              <h2 className="font-bold text-2xl mb-4">
-                {person.name}
-              </h2>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-500">Hours</p>
-                  <p className="text-2xl font-bold">
-                    {person.hours.toFixed(2)}
-                  </p>
-                </div>
-
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-500">Earned</p>
-                  <p className="text-2xl font-bold">
-                    ${person.pay.toFixed(2)}
-                  </p>
-                </div>
-
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-500">Unpaid</p>
-                  <p className="text-2xl font-bold">
-                    ${person.unpaidPay.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      ) : null}
     </main>
   )
 }

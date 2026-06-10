@@ -14,6 +14,9 @@ type Entry = {
   total_pay: number
   notes: string | null
   paid: boolean
+  cash_paid: number
+  venmo_paid: number
+  paid_at: string| null
   people: { name: string } | { name: string }[] | null
 }
 
@@ -34,6 +37,10 @@ export default function HistoryPage() {
   const [editEnd, setEditEnd] = useState('')
   const [editBreak, setEditBreak] = useState('0')
   const [editNotes, setEditNotes] = useState('')
+  const [paymentEntryId, setPaymentEntryId] = useState<string | null>(null)
+  const [cashPaid, setCashPaid] = useState('')
+  const [venmoPaid, setVenmoPaid] = useState('')
+  const [paymentError, setPaymentError] = useState('')
 
   useEffect(() => {
     loadPeople()
@@ -76,6 +83,9 @@ export default function HistoryPage() {
         total_pay,
         notes,
         paid,
+        cash_paid,
+        venmo_paid,
+        paid_at,
         people (
           name
         )
@@ -168,19 +178,53 @@ export default function HistoryPage() {
     loadEntries()
   }
 
-  async function togglePaid(entry: Entry) {
-    const { error } = await supabase
-      .from('time_entries')
-      .update({ paid: !entry.paid })
-      .eq('id', entry.id)
-
-    if (error) {
-      setMessage(error.message)
-      return
-    }
-
-    loadEntries()
+  function startPayment(entry: Entry) {
+  if (paymentEntryId === entry.id) {
+    setPaymentEntryId(null)
+    setPaymentError('')
+    return
   }
+
+  setPaymentEntryId(entry.id)
+  setCashPaid(String(Number(entry.cash_paid || 0).toFixed(2)))
+  setVenmoPaid(String(Number(entry.venmo_paid || 0).toFixed(2)))
+}
+
+  async function savePayment(entry: Entry) {
+  const cash = Number(cashPaid || 0)
+  const venmo = Number(venmoPaid || 0)
+  const totalPaid = cash + venmo
+  const totalPay = Number(entry.total_pay || 0)
+
+  if (totalPaid > totalPay) {
+    setPaymentError(
+      `Payment cannot exceed amount owed. Owed: $${totalPay.toFixed(2)}, entered: $${totalPaid.toFixed(2)}.`
+    )
+    return
+  }
+
+  const { error } = await supabase
+    .from('time_entries')
+    .update({
+      cash_paid: cash,
+      venmo_paid: venmo,
+      paid: totalPaid >= totalPay,
+      paid_at: totalPaid >= totalPay ? new Date().toISOString() : null,
+    })
+    .eq('id', entry.id)
+
+  if (error) {
+    setMessage(error.message)
+    return
+  }
+
+  setPaymentEntryId(null)
+  setCashPaid('')
+  setVenmoPaid('')
+  setPaymentError('')
+  setMessage('Payment saved.')
+  loadEntries()
+}
 
   const filteredEntries = selectedPersonId
     ? entries.filter((entry) => entry.person_id === selectedPersonId)
@@ -384,7 +428,7 @@ export default function HistoryPage() {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 md:min-w-72">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:min-w-[32rem]">
                       <div className="bg-gray-50 rounded-xl p-4">
                         <p className="text-sm text-gray-500">Hours</p>
                         <p className="text-2xl font-bold">
@@ -410,10 +454,10 @@ export default function HistoryPage() {
                     </button>
 
                     <button
-                      onClick={() => togglePaid(entry)}
+                      onClick={() => startPayment(entry)}
                       className="rounded-xl px-4 py-2 border bg-white"
                     >
-                      Mark {entry.paid ? 'Unpaid' : 'Paid'}
+                      {paymentEntryId === entry.id ? 'Hide Payment Details' : 'Payment Details'}
                     </button>
 
                     <button
@@ -422,6 +466,127 @@ export default function HistoryPage() {
                     >
                       Delete
                     </button>
+
+                    {paymentEntryId === entry.id && (
+  <div className="mt-4 bg-gray-50 rounded-xl p-4 border">
+    <div className="flex items-start justify-between gap-4 mb-4">
+      <div>
+        <h3 className="font-bold text-lg">Payment Details</h3>
+        <p className="text-sm text-gray-600">
+          View or edit how this entry was paid.
+        </p>
+      </div>
+
+      <div className="text-right text-sm">
+        <p className="text-gray-500">Total Due</p>
+        <p className="font-bold">
+          ${Number(entry.total_pay).toFixed(2)}
+        </p>
+      </div>
+    </div>
+
+    <div className="grid gap-3 md:grid-cols-2">
+      <div>
+        <label className="block text-sm font-semibold text-gray-600 mb-1">
+          Cash Paid
+        </label>
+        <input
+          className="w-full border rounded-xl p-3"
+          type="number"
+          step="0.01"
+          min="0"
+          value={cashPaid}
+          onChange={(e) => setCashPaid(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-600 mb-1">
+          Venmo Paid
+        </label>
+        <input
+          className="w-full border rounded-xl p-3"
+          type="number"
+          step="0.01"
+          min="0"
+          value={venmoPaid}
+          onChange={(e) => setVenmoPaid(e.target.value)}
+        />
+      </div>
+    </div>
+
+    <div className="grid gap-3 md:grid-cols-3 mt-4">
+      <div className="bg-white rounded-xl border p-3">
+        <p className="text-sm text-gray-500">Cash</p>
+        <p className="text-xl font-bold">
+          ${Number(cashPaid || 0).toFixed(2)}
+        </p>
+      </div>
+
+      <div className="bg-white rounded-xl border p-3">
+        <p className="text-sm text-gray-500">Venmo</p>
+        <p className="text-xl font-bold">
+          ${Number(venmoPaid || 0).toFixed(2)}
+        </p>
+      </div>
+
+      <div className="bg-white rounded-xl border p-3">
+        <p className="text-sm text-gray-500">Total Paid</p>
+        <p className="text-xl font-bold">
+          ${(Number(cashPaid || 0) + Number(venmoPaid || 0)).toFixed(2)}
+        </p>
+      </div>
+    </div>
+
+    <div className="mt-3">
+      <p className="text-sm text-gray-600">
+        Remaining:{' '}
+        <strong>
+          $
+          {Math.max(
+            Number(entry.total_pay || 0) -
+              (Number(cashPaid || 0) + Number(venmoPaid || 0)),
+            0
+          ).toFixed(2)}
+        </strong>
+      </p>
+    </div>
+
+{paymentError && (
+  <p className="mt-4 bg-red-50 text-red-600 border border-red-200 rounded-xl p-3">
+    {paymentError}
+  </p>
+)}
+    <div className="flex flex-wrap gap-3 mt-4">
+      <button
+        onClick={() => savePayment(entry)}
+        className="rounded-xl px-4 py-2 bg-gray-900 text-white"
+      >
+        Save Payment
+      </button>
+
+      <button
+        onClick={() => setPaymentEntryId(null)}
+        className="rounded-xl px-4 py-2 border bg-white"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+<div className="bg-gray-50 rounded-xl p-4">
+  <p className="text-sm text-gray-500">Paid</p>
+  <p className="text-2xl font-bold">
+    $
+    {(
+      Number(entry.cash_paid || 0) + Number(entry.venmo_paid || 0)
+    ).toFixed(2)}
+  </p>
+  <p className="text-xs text-gray-500">
+    Cash ${Number(entry.cash_paid || 0).toFixed(2)} · Venmo $
+    {Number(entry.venmo_paid || 0).toFixed(2)}
+  </p>
+</div>
                   </div>
                 </>
               )}
