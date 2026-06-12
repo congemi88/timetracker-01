@@ -20,6 +20,7 @@ export default function RootLayout({
               <div className="flex gap-4 text-sm font-medium">
                 <Link href="/dashboard">Dashboard</Link>
                 <Link href="/schedule">Schedule</Link>
+                <Link href="/payment">Pay</Link>
                 <Link href="/entries">Add Entry</Link>
                 <Link href="/history">History</Link>
                 <Link href="/people">People</Link>
@@ -32,9 +33,10 @@ export default function RootLayout({
           </div>
 
           <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t">
-            <div className="grid grid-cols-5 text-xs font-semibold">
+            <div className="grid grid-cols-6 text-xs font-semibold">
               <Link className="p-3 text-center" href="/dashboard">Home</Link>
               <Link className="p-3 text-center" href="/schedule">Schedule</Link>
+              <Link className="p-3 text-center" href="/payment">Pay</Link>
               <Link className="p-3 text-center" href="/entries">Entry</Link>
               <Link className="p-3 text-center" href="/history">History</Link>
               <Link className="p-3 text-center" href="/people">People</Link>

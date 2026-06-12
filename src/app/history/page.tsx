@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useSearchParams } from 'next/navigation'
+
 
 type Entry = {
   id: string
@@ -31,6 +33,7 @@ export default function HistoryPage() {
   const [selectedPersonId, setSelectedPersonId] = useState('')
   const [message, setMessage] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const searchParams = useSearchParams()
 
   const [editDate, setEditDate] = useState('')
   const [editStart, setEditStart] = useState('')
@@ -43,9 +46,14 @@ export default function HistoryPage() {
   const [paymentError, setPaymentError] = useState('')
 
   useEffect(() => {
-    loadPeople()
-    loadEntries()
-  }, [])
+  loadPeople()
+  loadEntries()
+
+  const personIdFromUrl = searchParams.get('personId')
+  if (personIdFromUrl) {
+    setSelectedPersonId(personIdFromUrl)
+  }
+    }, [searchParams])  
 
   function getPersonName(peopleValue: Entry['people']) {
     if (Array.isArray(peopleValue)) {
